@@ -47,3 +47,8 @@ export const posts = pgTable(
     index("posts_user_created_at_idx").on(table.userId, table.createdAt),
   ],
 );
+
+export const schema = {
+  users,
+  posts,
+};
