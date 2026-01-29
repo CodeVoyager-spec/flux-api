@@ -3,11 +3,8 @@ import { db } from "../../db";
 import { users } from "../../db/schema";
 import { comparePassword, hashPassword } from "../../utils/password";
 import { JwtPayload, signinBody, signupBody } from "./auth.types";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  verifyRefreshToken,
-} from "../../utils/jwt";
+import { generateAccessToken, generateRefreshToken } from "../../utils/jwt";
+import { AppError } from "../../utils/AppError";
 
 export class AuthService {
   // Signup new user
@@ -42,12 +39,12 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new Error("Invalid credentials");
+      throw new AppError("Invalid credentials", 404);
     }
 
     const validPassword = await comparePassword(password, user.password);
     if (!validPassword) {
-      throw new Error("Invalid credentials");
+      throw new AppError("Invalid credentials", 401);
     }
 
     const payload: JwtPayload = {

@@ -7,9 +7,7 @@ const router = Router();
 const controller = new AuthController();
 
 router.post("/signup", validate(signupSchema), controller.signup);
-
 router.post("/signin", validate(signinSchema), controller.signin);
-
 router.post("/signout", controller.signout);
 
 export default router;

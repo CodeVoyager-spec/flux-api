@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
+import { catchAsync } from "../../utils/catchAsync";
 
 export class AuthController {
   private authService = new AuthService();
 
   // Signup new user
-  signup = async (req: Request, res: Response) => {
+  signup = catchAsync(async (req: Request, res: Response) => {
     const { username, email, password } = req.body;
 
     const user = await this.authService.signup({
@@ -18,10 +19,10 @@ export class AuthController {
       message: "User registered successfully",
       user,
     });
-  };
+  });
 
   // Signin existing user
-  signin = async (req: Request, res: Response) => {
+  signin = catchAsync(async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     const { accessToken, refreshToken } = await this.authService.signin({
@@ -34,20 +35,20 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.json({ accessToken });
-  };
+  });
 
   // Refresh access token using refresh token
 
   // Signout and blacklist refresh token
-  signout = async (req: Request, res: Response) => {
+  signout = catchAsync(async (req: Request, res: Response) => {
     const refreshToken = req.cookies?.refreshToken;
     if (refreshToken) {
       res.clearCookie("refreshToken");
     }
     res.json({ message: "Logged out successfully" });
-  };
+  });
 }
