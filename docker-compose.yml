@@ -10,11 +10,9 @@ services:
       - .env
     depends_on:
       - postgres
-
     volumes:
       - .:/app
       - social_node_modules:/app/node_modules
-
     command: npm run dev
 
   postgres:
