@@ -2,13 +2,13 @@ import { eq } from "drizzle-orm";
 import { db } from "../../db";
 import { users } from "../../db/schema";
 import { comparePassword, hashPassword } from "../../utils/password";
-import { JwtPayload, signinBody, signupBody } from "./auth.types";
+import { JwtPayload, SigninBody, SignupBody } from "./auth.types";
 import { generateAccessToken } from "../../utils/jwt";
 import { AppError } from "../../utils/AppError";
 
 export class AuthService {
   // Signup new user
-  async signup(data: signupBody) {
+  async signup(data: SignupBody) {
     const { username, email, password, role } = data;
 
     const hashedPassword = await hashPassword(password);
@@ -19,20 +19,21 @@ export class AuthService {
         username,
         email,
         password: hashedPassword,
-        role
+        role,
       })
       .returning({
         id: users.id,
         role: users.role,
         username: users.username,
         email: users.email,
+        createdAt: users.createdAt,
       });
 
     return user;
   }
 
   // Signin existing user
-  async signin(data: signinBody) {
+  async signin(data: SigninBody) {
     const { email, password } = data;
 
     const user = await db.query.users.findFirst({
@@ -43,8 +44,12 @@ export class AuthService {
       throw new AppError("Invalid credentials", 404);
     }
 
-    const validPassword = await comparePassword(password, user.password);
-    if (!validPassword) {
+    if (!user.isVerified) {
+      throw new AppError("Your accont is not varified", 403);
+    }
+
+    const isValidPassword = await comparePassword(password, user.password);
+    if (!isValidPassword) {
       throw new AppError("Invalid credentials", 401);
     }
 

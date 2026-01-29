@@ -1,7 +1,8 @@
 import { z } from "zod";
 
-export const roles = ["USER", "ADMIN", "MODERATOR"] as const;
-export type Role = (typeof roles)[number];
+// Zod enum for user roles
+export const userRoleSchema = z.enum(["USER", "ADMIN", "MODERATOR"]);
+export type UserRole = z.infer<typeof userRoleSchema>; 
 
 /**
  * Signup schema
@@ -20,7 +21,8 @@ export const signupSchema = z.object({
       .min(1, "Password is required")
       .min(6, "Password must be at least 6 characters"),
 
-    role: z.enum(roles).default("USER"),
+    // Use the Zod enum, not the TS type
+    role: userRoleSchema.default("USER"),
   }),
 });
 
