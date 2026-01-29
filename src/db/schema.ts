@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   pgTable,
+  pgEnum,
   uuid,
   varchar,
   text,
@@ -10,7 +11,7 @@ import {
   primaryKey,
 } from "drizzle-orm/pg-core";
 
-// Halpers
+// Helpers
 
 export const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true })
@@ -28,6 +29,10 @@ export const createdAtOnly = {
     .notNull(),
 };
 
+// Enums and Constants
+
+export const userRoles = pgEnum("user_role", ["USER", "ADMIN", "MODERATOR"]);
+
 // Tables
 
 export const users = pgTable("users", {
@@ -39,6 +44,7 @@ export const users = pgTable("users", {
   avatarUrl: text("avatar_url"),
   avatarPublicId: text("avatar_public_id"),
   isVerified: boolean("is_verified").default(false).notNull(),
+  role: userRoles("role").notNull().default("USER"),
   ...timestamps,
 });
 
@@ -46,11 +52,9 @@ export const posts = pgTable(
   "posts",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-
     content: text("content").notNull(),
     imageUrl: text("image_url"),
     imagePublicId: text("image_public_id"),
@@ -69,11 +73,9 @@ export const follows = pgTable(
     followerId: uuid("follower_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-
     followingId: uuid("following_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-
     ...createdAtOnly,
   },
   (table) => [
@@ -91,11 +93,9 @@ export const postLikes = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-
     postId: uuid("post_id")
       .notNull()
       .references(() => posts.id, { onDelete: "cascade" }),
-
     ...createdAtOnly,
   },
   (table) => [
@@ -115,11 +115,9 @@ export const comments = pgTable(
     postId: uuid("post_id")
       .notNull()
       .references(() => posts.id, { onDelete: "cascade" }),
-
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-
     content: text("content").notNull(),
     ...timestamps,
   },
@@ -198,4 +196,5 @@ export const schema = {
   follows,
   postLikes,
   comments,
+  userRoles, 
 };
