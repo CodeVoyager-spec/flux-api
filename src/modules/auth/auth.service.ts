@@ -3,12 +3,17 @@ import { db } from "../../db";
 import { users } from "../../db/schema";
 import { comparePassword, hashPassword } from "../../utils/password";
 import { JwtPayload, signinBody, signupBody } from "./auth.types";
-import { generateAccessToken, generateRefreshToken } from "../../utils/jwt";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "../../utils/jwt";
 
 export class AuthService {
+  // Signup new user
   async signup(data: signupBody) {
     const { username, email, password } = data;
-    // hash password and save user to DB
+
     const hashedPassword = await hashPassword(password);
 
     const [user] = await db
@@ -21,15 +26,17 @@ export class AuthService {
       .returning({
         id: users.id,
         role: users.role,
+        username: users.username,
+        email: users.email,
       });
 
     return user;
   }
 
+  // Signin existing user
   async signin(data: signinBody) {
     const { email, password } = data;
 
-    // check user + generate JWT
     const user = await db.query.users.findFirst({
       where: eq(users.email, email),
     });
@@ -53,4 +60,7 @@ export class AuthService {
 
     return { accessToken, refreshToken };
   }
+
+  // Refresh access token using refresh token
+  // Signout by blacklisting refresh token
 }
