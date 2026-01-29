@@ -37,8 +37,12 @@ export const userRoles = pgEnum("user_role", ["USER", "ADMIN", "MODERATOR"]);
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
-  username: varchar("username", { length: 50 }).notNull().unique(),
-  email: varchar("email", { length: 255 }).notNull().unique(),
+  username: varchar("username", { length: 50 })
+    .notNull()
+    .unique("users_username_unique"),
+  email: varchar("email", { length: 255 })
+    .notNull()
+    .unique("users_email_unique"),
   password: text("password").notNull(),
   bio: text("bio"),
   avatarUrl: text("avatar_url"),
@@ -196,5 +200,5 @@ export const schema = {
   follows,
   postLikes,
   comments,
-  userRoles, 
+  userRoles,
 };
