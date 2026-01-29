@@ -7,12 +7,13 @@ export class AuthController {
 
   // Signup new user
   signup = catchAsync(async (req: Request, res: Response) => {
-    const { username, email, password } = req.body;
+    const { username, email, password, role } = req.body;
 
     const user = await this.authService.signup({
       username,
       email,
       password,
+      role,
     });
 
     res.status(201).json({
@@ -25,30 +26,11 @@ export class AuthController {
   signin = catchAsync(async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
-    const { accessToken, refreshToken } = await this.authService.signin({
+    const { accessToken } = await this.authService.signin({
       email,
       password,
     });
-
-    // Store refresh token in httpOnly cookie
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
     res.json({ accessToken });
   });
 
-  // Refresh access token using refresh token
-
-  // Signout and blacklist refresh token
-  signout = catchAsync(async (req: Request, res: Response) => {
-    const refreshToken = req.cookies?.refreshToken;
-    if (refreshToken) {
-      res.clearCookie("refreshToken");
-    }
-    res.json({ message: "Logged out successfully" });
-  });
 }

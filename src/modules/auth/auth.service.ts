@@ -3,13 +3,13 @@ import { db } from "../../db";
 import { users } from "../../db/schema";
 import { comparePassword, hashPassword } from "../../utils/password";
 import { JwtPayload, signinBody, signupBody } from "./auth.types";
-import { generateAccessToken, generateRefreshToken } from "../../utils/jwt";
+import { generateAccessToken } from "../../utils/jwt";
 import { AppError } from "../../utils/AppError";
 
 export class AuthService {
   // Signup new user
   async signup(data: signupBody) {
-    const { username, email, password } = data;
+    const { username, email, password, role } = data;
 
     const hashedPassword = await hashPassword(password);
 
@@ -19,6 +19,7 @@ export class AuthService {
         username,
         email,
         password: hashedPassword,
+        role
       })
       .returning({
         id: users.id,
@@ -53,11 +54,7 @@ export class AuthService {
     };
 
     const accessToken = generateAccessToken(payload);
-    const refreshToken = generateRefreshToken(payload);
 
-    return { accessToken, refreshToken };
+    return { accessToken };
   }
-
-  // Refresh access token using refresh token
-  // Signout by blacklisting refresh token
 }
