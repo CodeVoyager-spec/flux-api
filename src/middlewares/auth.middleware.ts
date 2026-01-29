@@ -1,60 +1,46 @@
-import { eq } from "drizzle-orm";
-import { db } from "../db";
-import { users } from "../db/schema";
-import { AuthRequest, UserRole } from "../modules/auth/auth.types";
-import { AppError } from "../utils/AppError";
+import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken } from "../utils/jwt";
-import { NextFunction } from "express";
+import { UserRole } from "../modules/auth/auth.validation";
 
-export const isAuthenticated = async (
-  req: AuthRequest,
-  _res: Response,
+export const authenticate = (
+  req: Request,
+  res: Response,
   next: NextFunction,
 ) => {
-  try {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return next(new AppError("No token provided", 401));
-
-    const decoded = verifyAccessToken(token);
-
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, decoded.userId))
-      .limit(1)
-      .execute();
-
-    if (!user) return next(new AppError("User not found", 404));
-
-    // Attach full user info to request
-    req.user = {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role as UserRole,
-    };
-
-    next();
-  } catch (err) {
-    next(err);
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
   }
+
+  const payload = verifyAccessToken(token);
+
+  req.user = {
+    id: payload.userId,
+    role: payload.role as UserRole,
+  };
+
+  next();
 };
 
-/**
- * Authorize middleware
- */
 export const authorize =
-  (...roles: UserRole[]) =>
-  (req: AuthRequest, _res: Response, next: NextFunction) => {
-    if (!req.user) return next(new AppError("Unauthorized", 401));
+  (...allowedRoles: UserRole[]) =>
+  (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required. Please log in.",
+      });
+    }
 
-    if (!roles.includes(req.user.role)) {
-      return next(new AppError(`Requires role: ${roles.join(", ")}`, 403));
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: `Access denied. Required role: ${allowedRoles.join(", ")}`,
+      });
     }
 
     next();
   };
 
-// Convenience
 export const isAdmin = authorize("ADMIN");
 export const isModerator = authorize("ADMIN", "MODERATOR");
