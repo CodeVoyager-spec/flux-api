@@ -19,19 +19,16 @@ export class PostController {
     async (req: Request<{}, {}, CreatePostInput>, res: Response) => {
       const userId = req.user!.id;
 
-      let image;
+      let imageData;
       if (req.file) {
-        const uploaded = await uploadImageToCloudinary(
-          req.file.buffer,
-          "posts",
-        );
-        image = { url: uploaded.secure_url, publicId: uploaded.public_id };
+        const uploaded = await uploadImageToCloudinary(req.file.buffer, "posts");
+        imageData = { url: uploaded.secure_url, publicId: uploaded.public_id };
       }
 
       const post = await this.postService.createPost(userId, {
         ...req.body,
-        imageUrl: image?.url,
-        imagePublicId: image?.publicId,
+        imageUrl: imageData?.url,
+        imagePublicId: imageData?.publicId,
       });
 
       res.status(201).json({ data: post });
@@ -48,14 +45,8 @@ export class PostController {
 
       let imageData = {};
       if (req.file) {
-        const uploaded = await uploadImageToCloudinary(
-          req.file.buffer,
-          "posts",
-        );
-        imageData = {
-          imageUrl: uploaded.secure_url,
-          imagePublicId: uploaded.public_id,
-        };
+        const uploaded = await uploadImageToCloudinary(req.file.buffer, "posts",);
+        imageData = { imageUrl: uploaded.secure_url, imagePublicId: uploaded.public_id };
       }
 
       const post = await this.postService.updatePost(postId, userId, {

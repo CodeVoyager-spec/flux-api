@@ -1,4 +1,3 @@
-// src/modules/post/post.service.ts
 import { and, eq } from "drizzle-orm";
 import { db } from "../../db";
 import { posts } from "../../db/schema";
