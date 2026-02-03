@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createPostSchema, updatePostSchema } from "./post.validation";
+import { createPostSchema, deletePostSchema, updatePostSchema } from "./post.validation";
 
 /**
  * Request body types
@@ -7,3 +7,4 @@ import { createPostSchema, updatePostSchema } from "./post.validation";
 export type CreatePostInput = z.infer<typeof createPostSchema>["body"];
 export type UpdatePostInput = z.infer<typeof updatePostSchema>["body"];
 export type UpdatePostParams = z.infer<typeof updatePostSchema>["params"];
+export type DeletePostParams = z.infer<typeof deletePostSchema>["params"];

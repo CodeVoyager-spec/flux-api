@@ -29,3 +29,10 @@ export const updatePostSchema = z.object({
     imagePublicId: z.string().nullable().optional(),
   }),
 });
+
+export const deletePostSchema = z.object({
+  params: z.object({
+    postId: z.string().uuid(),
+  }),
+});
+
