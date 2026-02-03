@@ -1,19 +1,39 @@
-import type { Request, Response } from "express";
+import { Request, Response } from "express";
 import { PostService } from "./post.service";
 import { catchAsync } from "../../utils/catchAsync";
+import {
+  uploadImageToCloudinary,
+  deleteImageFromCloudinary,
+} from "../../utils/cloudinary";
 import type {
   CreatePostInput,
-  UpdatePostParams,
   UpdatePostInput,
+  UpdatePostParams,
   DeletePostParams,
 } from "./post.types";
 
 export class PostController {
-  private readonly service = new PostService();
+  private postService = new PostService();
 
   createPost = catchAsync(
     async (req: Request<{}, {}, CreatePostInput>, res: Response) => {
-      const post = await this.service.createPost(req.user!.id, req.body);
+      const userId = req.user!.id;
+
+      let image;
+      if (req.file) {
+        const uploaded = await uploadImageToCloudinary(
+          req.file.buffer,
+          "posts",
+        );
+        image = { url: uploaded.secure_url, publicId: uploaded.public_id };
+      }
+
+      const post = await this.postService.createPost(userId, {
+        ...req.body,
+        imageUrl: image?.url,
+        imagePublicId: image?.publicId,
+      });
+
       res.status(201).json({ data: post });
     },
   );
@@ -23,19 +43,42 @@ export class PostController {
       req: Request<UpdatePostParams, {}, UpdatePostInput>,
       res: Response,
     ) => {
-      const post = await this.service.updatePost(
-        req.params.postId,
-        req.user!.id,
-        req.body,
-      );
+      const userId = req.user!.id;
+      const { postId } = req.params;
+
+      let imageData = {};
+      if (req.file) {
+        const uploaded = await uploadImageToCloudinary(
+          req.file.buffer,
+          "posts",
+        );
+        imageData = {
+          imageUrl: uploaded.secure_url,
+          imagePublicId: uploaded.public_id,
+        };
+      }
+
+      const post = await this.postService.updatePost(postId, userId, {
+        ...req.body,
+        ...imageData,
+      });
+
       res.status(200).json({ data: post });
     },
   );
 
   deletePost = catchAsync(
     async (req: Request<DeletePostParams>, res: Response) => {
-      await this.service.deletePost(req.params.postId, req.user!.id);
-      res.status(204).send();
+      const userId = req.user!.id;
+      const { postId } = req.params;
+
+      const post = await this.postService.deletePost(postId, userId);
+
+      if (post.imagePublicId) {
+        await deleteImageFromCloudinary(post.imagePublicId);
+      }
+
+      res.status(204).json({ message: "Post deleted successfully" });
     },
   );
 }
