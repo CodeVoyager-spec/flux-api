@@ -1,12 +1,12 @@
-import { UserRole } from "../modules/auth/auth.validation";
+import type { UserRole } from "../../db/schema";
 
 declare global {
   namespace Express {
     interface Request {
-      user?: {
+      user?: Readonly<{
         id: string;
         role: UserRole;
-      };
+      }>;
     }
   }
 }

@@ -1,41 +1,22 @@
 import { z } from "zod";
 
-// Zod enum for user roles
-export const userRoleSchema = z.enum(["USER", "ADMIN", "MODERATOR"]);
-export type UserRole = z.infer<typeof userRoleSchema>; 
+/** Zod enum aligned with UserRole */
+export const UserRoleEnum = z.enum(["USER", "ADMIN", "MODERATOR"]);
 
-/**
- * Signup schema
- */
+/** Signup */
 export const signupSchema = z.object({
   body: z.object({
-    username: z
-      .string()
-      .min(1, "Username is required")
-      .min(3, "Username must be at least 3 characters"),
-
-    email: z.string().min(1, "Email is required").email("Invalid email format"),
-
-    password: z
-      .string()
-      .min(1, "Password is required")
-      .min(6, "Password must be at least 6 characters"),
-
-    // Use the Zod enum, not the TS type
-    role: userRoleSchema.default("USER"),
+    username: z.string().min(3, "Username must be at least 3 characters"),
+    email: z.string().email("Invalid email"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    role: UserRoleEnum.default("USER"),
   }),
 });
 
-/**
- * Signin schema
- */
+/** Signin */
 export const signinSchema = z.object({
   body: z.object({
-    email: z.string().min(1, "Email is required").email("Invalid email format"),
-
-    password: z
-      .string()
-      .min(1, "Password is required")
-      .min(6, "Password must be at least 6 characters"),
+    email: z.string().email("Invalid email"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
   }),
 });

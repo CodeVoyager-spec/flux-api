@@ -1,13 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken } from "../utils/jwt";
-import { UserRole } from "../modules/auth/auth.validation";
+import type { UserRole } from "../modules/auth/auth.types";
 
-export const authenticate = (
+export const isAuthenticated = (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   const token = req.headers.authorization?.split(" ")[1];
+
   if (!token) {
     return res.status(401).json({ message: "Unauthorized" });
   }
@@ -16,7 +17,7 @@ export const authenticate = (
 
   req.user = {
     id: payload.userId,
-    role: payload.role as UserRole,
+    role: payload.role,
   };
 
   next();

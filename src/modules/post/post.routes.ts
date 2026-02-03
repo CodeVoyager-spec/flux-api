@@ -1,0 +1,24 @@
+import { Router } from "express";
+import { PostController } from "./post.controller";
+import { isAuthenticated } from "../../middlewares/auth.middleware";
+import { validateRequest } from "../../middlewares/validateRequest";
+import { createPostSchema, updatePostSchema } from "./post.validation";
+
+const router = Router();
+const controller = new PostController();
+
+router.post(
+  "/",
+  isAuthenticated,
+  validateRequest(createPostSchema),
+  controller.createPost,
+);
+router.put(
+  "/:postId",
+  isAuthenticated,
+  validateRequest(updatePostSchema),
+  controller.updatePost,
+);
+router.delete("/:postId", isAuthenticated, controller.deletePost);
+
+export default router;

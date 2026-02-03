@@ -31,7 +31,7 @@ export const createdAtOnly = {
 
 // Enums and Constants
 
-export const userRoles = pgEnum("user_role", ["USER", "ADMIN", "MODERATOR"]);
+export const userRole = pgEnum("user_role", ["USER", "ADMIN", "MODERATOR"]);
 
 // Tables
 
@@ -48,7 +48,7 @@ export const users = pgTable("users", {
   avatarUrl: text("avatar_url"),
   avatarPublicId: text("avatar_public_id"),
   isVerified: boolean("is_verified").default(false).notNull(),
-  role: userRoles("role").notNull().default("USER"),
+  role: userRole("role").notNull().default("USER"),
   ...timestamps,
 });
 
@@ -200,5 +200,5 @@ export const schema = {
   follows,
   postLikes,
   comments,
-  userRoles,
+  userRole,
 };
