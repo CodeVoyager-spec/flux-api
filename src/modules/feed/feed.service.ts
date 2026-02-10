@@ -38,9 +38,9 @@ export class FeedService {
         username: post.author.username,
         avatar: post.author.avatarUrl ?? null,
       },
-      likesCount: (post.likes ?? []).length,
-      commentsCount: (post.comments ?? []).length,
-      isLiked: (post.likes ?? []).some((like) => like.userId === userId),
+      likesCount: post.likes.length,
+      commentsCount: post.comments.length,
+      isLiked: post.likes .some((like) => like.userId === userId),
     }));
   }
 }
